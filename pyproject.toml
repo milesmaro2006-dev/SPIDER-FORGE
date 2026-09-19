@@ -82,8 +82,10 @@ Issues = "https://github.com/milesmaro2006-dev/spider-forge/issues"
 Changelog = "https://github.com/milesmaro2006-dev/spider-forge/blob/main/CHANGELOG.md"
 Security = "https://github.com/milesmaro2006-dev/spider-forge/blob/main/SECURITY.md"
 
-[tool.setuptools]
-packages = ["spiderforge", "backend"]
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["spiderforge*", "backend*"]
+exclude = ["tests*", "*.tests*"]
 
 [tool.setuptools.package-data]
 "backend" = ["static/frontend/*"]
