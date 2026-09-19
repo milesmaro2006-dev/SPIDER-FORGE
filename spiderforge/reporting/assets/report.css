@@ -1,0 +1,59 @@
+:root {
+  --bg: #ffffff;
+  --fg: #1a1a1a;
+  --muted: #666;
+  --border: #e1e1e1;
+  --accent: #0066cc;
+  --critical: #b30000;
+  --high: #d64500;
+  --medium: #b8860b;
+  --low: #1769aa;
+  --info: #666;
+  --code-bg: #f5f5f5;
+}
+@page { size: A4; margin: 18mm 16mm 20mm 16mm; }
+* { box-sizing: border-box; }
+body {
+  font-family: -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: var(--fg);
+  background: var(--bg);
+  line-height: 1.55;
+  font-size: 11pt;
+  margin: 0;
+  padding: 0;
+}
+.cover {
+  page-break-after: always;
+  padding: 40mm 0 20mm 0;
+  text-align: center;
+}
+.cover h1 { font-size: 32pt; margin: 0 0 6pt 0; color: var(--accent); }
+.cover .sub { font-size: 14pt; color: var(--muted); margin-bottom: 40pt; }
+.cover .meta { font-size: 11pt; color: var(--fg); margin-top: 60pt; }
+.cover .meta div { margin: 4pt 0; }
+h1, h2, h3 { color: var(--fg); }
+h2 { border-bottom: 2pt solid var(--accent); padding-bottom: 4pt; margin-top: 24pt; }
+h3 { margin-top: 18pt; }
+code, pre { font-family: "SFMono-Regular", Menlo, Consolas, monospace; font-size: 9pt; }
+pre { background: var(--code-bg); padding: 8pt; border-radius: 4pt; overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; margin: 10pt 0; }
+th, td { border: 1pt solid var(--border); padding: 5pt 8pt; text-align: left; vertical-align: top; }
+th { background: #f0f0f0; }
+.sev-critical { color: var(--critical); font-weight: bold; }
+.sev-high { color: var(--high); font-weight: bold; }
+.sev-medium { color: var(--medium); font-weight: bold; }
+.sev-low { color: var(--low); }
+.sev-info { color: var(--info); }
+.finding { page-break-inside: avoid; border: 1pt solid var(--border);
+  border-radius: 4pt; padding: 10pt; margin: 10pt 0; }
+.finding h3 { margin-top: 0; }
+.badge { display: inline-block; padding: 2pt 6pt; border-radius: 3pt;
+  font-size: 9pt; color: #fff; }
+.badge.critical { background: var(--critical); }
+.badge.high { background: var(--high); }
+.badge.medium { background: var(--medium); }
+.badge.low { background: var(--low); }
+.badge.info { background: var(--info); }
+.kv { font-size: 10pt; color: var(--muted); margin: 4pt 0; }
+.kv b { color: var(--fg); }
+.muted { color: var(--muted); }

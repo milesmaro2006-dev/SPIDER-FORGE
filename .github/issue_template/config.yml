@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📖 Documentation & Guides
+    url: https://github.com/milesmaro2006-dev/spider-forge#readme
+    about: Read the official documentation, CLI usage, and module guides.
+  - name: 💬 Discussions & Q&A
+    url: https://github.com/milesmaro2006-dev/spider-forge/discussions
+    about: Ask questions, share ideas, and connect with the community.
+  - name: 🔒 Security Vulnerability Reporting
+    url: https://github.com/milesmaro2006-dev/spider-forge/security/advisories/new
+    about: Report security vulnerabilities privately following our security policy.

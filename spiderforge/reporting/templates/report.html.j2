@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SpiderForge Report — {{ meta.scan_id }}</title>
+<style>{{ css }}</style>
+</head>
+<body>
+
+<section class="cover">
+  <h1>SpiderForge</h1>
+  <div class="sub">Web Security Assessment Report</div>
+  <div class="meta">
+    <div><b>Project:</b> {{ meta.project_name }}</div>
+    <div><b>Target:</b> {{ meta.target }}</div>
+    <div><b>Scan ID:</b> {{ meta.scan_id }}</div>
+    <div><b>Started:</b> {{ meta.started_at }}</div>
+    <div><b>Finished:</b> {{ meta.finished_at or '—' }}</div>
+    <div><b>Author:</b> {{ meta.author }}</div>
+  </div>
+</section>
+
+<h2>Executive summary</h2>
+<p>The scan produced <b>{{ total_findings }}</b> findings across the assessed
+attack surface.</p>
+<table>
+  <thead><tr><th>Severity</th><th>Count</th></tr></thead>
+  <tbody>
+    {% for sev in ['critical','high','medium','low','info'] %}
+    <tr>
+      <td><span class="sev-{{ sev }}">{{ sev|capitalize }}</span></td>
+      <td>{{ counts.get(sev, 0) }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h2>Scope</h2>
+<p><b>Included</b></p>
+<ul>{% for i in scope_include or ['—'] %}<li><code>{{ i }}</code></li>{% endfor %}</ul>
+<p><b>Excluded</b></p>
+<ul>{% for e in scope_exclude or ['—'] %}<li><code>{{ e }}</code></li>{% endfor %}</ul>
+
+<h2>Methodology</h2>
+<ol>
+  <li>Scope validation for every outbound request.</li>
+  <li>Reconnaissance: DNS, HTTP probe, technology detection, robots, sitemap.</li>
+  <li>Crawling: scope-aware async crawler with form/JS/parameter extraction.</li>
+  <li>Discovery: endpoints, parameters, API clustering, JS analysis, Swagger, GraphQL, hidden paths.</li>
+  <li>Analysis: {{ module_count }} security modules.</li>
+  <li>Evidence collection, deduplication, and report generation.</li>
+</ol>
+
+<h2>Attack surface</h2>
+{% if discovery %}
+<table>
+  <tbody>
+    {% for k, v in discovery.items() %}
+    <tr><th style="width:40%">{{ k }}</th><td>{{ v }}</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}<p class="muted">No discovery data.</p>{% endif %}
+
+<h2>Findings summary</h2>
+{% if findings %}
+<table>
+  <thead><tr><th>ID</th><th>Severity</th><th>Conf</th><th>Category</th><th>Title</th></tr></thead>
+  <tbody>
+  {% for f in findings %}
+    {% set sev_val = f.severity.value if f.severity.value is defined else f.severity %}
+    <tr>
+      <td><code>{{ f.id }}</code></td>
+      <td><span class="sev-{{ sev_val }}">{{ (sev_val|string)|upper }}</span></td>
+      <td>{{ '%.2f' % f.confidence }}</td>
+      <td>{{ f.category }}</td>
+      <td>{{ f.title }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}<p class="muted">No findings.</p>{% endif %}
+
+<h2>Detailed findings</h2>
+{% for f in findings %}
+{% set sev_detail = f.severity.value if f.severity.value is defined else f.severity %}
+<div class="finding">
+  <h3>
+    <span class="badge {{ sev_detail }}">{{ (sev_detail|string)|upper }}</span>
+    <code>{{ f.id }}</code> — {{ f.title }}
+  </h3>
+  <div class="kv">
+    <b>URL:</b> <code>{{ f.url }}</code> ·
+    <b>Method:</b> {{ f.method }}
+    {% if f.parameter %} · <b>Parameter:</b> <code>{{ f.parameter }}</code>{% endif %}
+  </div>
+  <div class="kv">
+    <b>Confidence:</b> {{ '%.2f' % f.confidence }}
+    {% if f.cvss_score is not none %} · <b>CVSS:</b> {{ f.cvss_score }} <code>{{ f.cvss_vector }}</code>{% endif %}
+  </div>
+  {% if f.description %}<p>{{ f.description }}</p>{% endif %}
+  {% if f.impact %}<p><b>Impact.</b> {{ f.impact }}</p>{% endif %}
+  {% if f.evidence.payload %}<p><b>Payload</b></p><pre>{{ f.evidence.payload }}</pre>{% endif %}
+  {% if f.evidence.request %}<p><b>Request</b></p><pre>{{ f.evidence.request[:2000] }}</pre>{% endif %}
+  {% if f.evidence.response %}<p><b>Response (excerpt)</b></p><pre>{{ f.evidence.response[:2000] }}</pre>{% endif %}
+  {% if f.remediation %}<p><b>Remediation.</b> {{ f.remediation }}</p>{% endif %}
+</div>
+{% endfor %}
+
+<h2>Appendix — module errors</h2>
+{% if module_errors %}
+<ul>{% for name, err in module_errors.items() %}<li><b>{{ name }}</b>: {{ err }}</li>{% endfor %}</ul>
+{% else %}<p class="muted">No module errors.</p>{% endif %}
+
+</body>
+</html>

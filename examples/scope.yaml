@@ -1,0 +1,14 @@
+project:
+  name: my-assessment
+
+scope:
+  include:
+    - example.com
+    - "*.example.com"
+  exclude:
+    - payments.example.com
+    - admin.example.com
+
+network:
+  allow_private_ips: true
+  allow_public_ips: true

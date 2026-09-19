@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="dark">
+    <title>SpiderForge</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+<div class="app">
+
+    <header class="topbar">
+        <a href="#/" class="brand">
+            <svg class="brand-logo" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <ellipse cx="12" cy="15" rx="3.2" ry="4.5" fill="currentColor"/>
+                <circle cx="12" cy="8" r="2.3" fill="currentColor"/>
+                <g stroke="currentColor" stroke-width="0.9" stroke-linecap="round" opacity="0.85">
+                    <path d="M12 11 L5 7"/><path d="M12 11 L3.5 12"/>
+                    <path d="M12 11 L5 16"/><path d="M12 11 L7.5 19"/>
+                    <path d="M12 11 L19 7"/><path d="M12 11 L20.5 12"/>
+                    <path d="M12 11 L19 16"/><path d="M12 11 L16.5 19"/>
+                </g>
+            </svg>
+            <div class="brand-text">
+                <span class="brand-name">SpiderForge</span>
+                <span class="brand-sub">Web Security Assessment</span>
+            </div>
+        </a>
+
+        <nav class="nav">
+            <a href="#/" data-nav="dashboard">Dashboard</a>
+            <a href="#/scans" data-nav="scans">Scans</a>
+        </nav>
+
+        <div class="status-pill" id="status-pill">
+            <span class="status-dot" id="status-dot"></span>
+            <span id="status-text">checking…</span>
+        </div>
+    </header>
+
+    <main id="app" class="main"></main>
+
+    <footer class="footer">
+        <span>SpiderForge v3.0</span>
+        <span class="dot-sep">·</span>
+        <span>Authorized testing only</span>
+    </footer>
+
+</div>
+
+<script src="/app.js"></script>
+</body>
+</html>

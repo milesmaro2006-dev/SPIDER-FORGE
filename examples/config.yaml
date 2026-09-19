@@ -1,0 +1,23 @@
+scanner:
+  concurrency: 20
+  timeout: 20.0
+  max_depth: 5
+  aggressive: true
+
+recon:
+  subdomains: true
+  ports: true
+  technologies: true
+
+browser:
+  enabled: false
+  screenshots: false
+
+reporting:
+  json: true
+  html: true
+  markdown: true
+  pdf: false
+
+logging:
+  level: INFO
