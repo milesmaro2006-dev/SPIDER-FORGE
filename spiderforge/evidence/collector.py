@@ -30,7 +30,7 @@ class Artifact(_PathBase):  # type: ignore[misc, valid-type]
     sha256: str = ""
     kind: str = "note"
 
-    def __new__(cls, *args: Any, **kwargs: Any) -> "Artifact":
+    def __new__(cls, *args: Any, **kwargs: Any) -> Artifact:
         return super().__new__(cls, *args)
 
     @property
