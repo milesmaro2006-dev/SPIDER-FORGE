@@ -26,15 +26,13 @@ assignees: ""
 
 ```text
 As a [security researcher / pentester], I want [capability] so that [benefit].
-
 ```
 
 ## Example Usage
 
 ```bash
 # Proposed command-line syntax or API payload
-spiderforge scan run [http://example.com](http://example.com) --new-flag value
-
+spiderforge scan run https://example.com --new-flag value
 ```
 
 ## Module Scope
@@ -55,6 +53,5 @@ spiderforge scan run [http://example.com](http://example.com) --new-flag value
 
 * [ ] I have searched existing issues to ensure this is not a duplicate.
 * [ ] This proposal aligns with the project scope and security assessment focus.
-f check .`, `mypy spiderforge/`).
-* [ ] I have updated `CHANGELOG.md` under the `[Unreleased]` section if applicable.
+* [ ] I have read `CONTRIBUTING.md` and followed the coding standards.
 * [ ] I confirm this contribution is my own work and agree to license it under MIT.
