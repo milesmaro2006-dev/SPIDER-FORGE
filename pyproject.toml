@@ -107,25 +107,39 @@ extend-exclude = [
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "SIM", "UP", "C4"]
 ignore = [
-    "B904",   # raise-without-from — tracked for Phase E
-    "SIM102", # nested if — tracked for Phase E
+    # ── Deferred to Phase E (code quality pass) ─────────────
+    "UP017",   # datetime.timezone.utc → datetime.UTC
+    "UP037",   # redundant quotes in type annotations
+    "UP041",   # asyncio.TimeoutError → TimeoutError
+    "UP042",   # class X(str, Enum) → class X(StrEnum)
+    "SIM105",  # try/except/pass → contextlib.suppress()
+    "SIM108",  # if/else → ternary
+    "SIM117",  # nested with → single with
+    "B008",    # typer.Option()/Argument() in function defaults (Typer idiom)
+    "B024",    # ABC without abstract methods
+    "B904",    # raise-without-from
+    "SIM102",  # nested if
+    "E741",    # ambiguous variable name `l`
 ]
 
 [tool.ruff.lint.per-file-ignores]
-# Tests only — informational lint issues deferred to Phase E.
+# Tests: informational lint issues deferred to Phase E.
 "tests/**/*.py" = [
-    "B",       # flake8-bugbear
-    "SIM",     # flake8-simplify (SIM102/SIM300)
-    "I001",    # unsorted imports
-    "W292",    # missing trailing newline
-    "F401",    # unused imports
-    "F541",    # f-string without placeholders
-    "UP035",   # deprecated typing imports
-    "UP045",   # Optional[X] → X | None
-    "UP006",   # List/Dict → list/dict
-    "UP028",   # yield from
-    "C408",    # dict() call → literal
+    "B",
+    "SIM",
+    "I001",
+    "W292",
+    "F401",
+    "F541",
+    "F841",
+    "UP035",
+    "UP045",
+    "UP006",
+    "UP028",
+    "C408",
 ]
+# Specific files with intentional informational deviations.
+"spiderforge/evidence/collector.py" = ["I001"]
 "__init__.py" = ["F401"]
 "tests/__init__.py" = ["F401"]
 "tests/**/__init__.py" = ["F401"]
