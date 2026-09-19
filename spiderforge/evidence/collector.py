@@ -11,12 +11,26 @@ from spiderforge.evidence.redactor import SecretRedactor
 from spiderforge.findings.models import Finding, FindingEvidence
 
 
-class Artifact(Path):
+# Inherit from the concrete platform path flavour (``PosixPath`` on
+# Linux/macOS, ``WindowsPath`` on Windows) rather than from
+# ``pathlib.Path`` directly. Subclassing ``Path`` on Python 3.11–3.13
+# leaves ``_flavour`` undefined on the subclass, so instantiating it
+# raises::
+#
+#     AttributeError: type object 'Artifact' has no attribute '_flavour'
+#
+# ``type(Path())`` returns the concrete flavour and inherits
+# ``_flavour`` correctly on every supported interpreter.
+_PathBase: type[Path] = type(Path())
+
+
+class Artifact(_PathBase):  # type: ignore[misc, valid-type]
     """A Path pointing to an evidence artifact enriched with sha256 hash and metadata."""
+
     sha256: str = ""
     kind: str = "note"
 
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls, *args: Any, **kwargs: Any) -> "Artifact":
         return super().__new__(cls, *args)
 
     @property
