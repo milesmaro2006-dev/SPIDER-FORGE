@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 # ═══════════════════════════════════════════════════════════════
-#  SpiderForge — POSIX installer (Linux / macOS / WSL)
+#  SpiderForge — Installer
+#  Linux / macOS / WSL
+#
+#  Does NOT modify system packages or run apt upgrade/update.
 # ═══════════════════════════════════════════════════════════════
+
 set -euo pipefail
 
 APP_NAME="spiderforge"
@@ -27,16 +31,21 @@ EOF
 }
 
 # ─── 1. Locate project ────────────────────────────────────────
+
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$REPO_DIR"
 
+[ -f "pyproject.toml" ] || die "pyproject.toml not found. Invalid SpiderForge directory."
+
 # ─── 2. Python check ──────────────────────────────────────────
+
 check_python() {
     local py
 
     py="$(command -v python3 || true)"
 
-    [ -z "$py" ] && die "python3 not found. Install Python ${MIN_PY_MAJOR}.${MIN_PY_MINOR}+."
+    [ -z "$py" ] && die \
+        "Python ${MIN_PY_MAJOR}.${MIN_PY_MINOR}+ is required. python3 was not found."
 
     if ! "$py" -c "
 import sys
@@ -44,114 +53,101 @@ sys.exit(
     0 if sys.version_info[:2] >= (${MIN_PY_MAJOR}, ${MIN_PY_MINOR}) else 1
 )
 "; then
-        die "Python ${MIN_PY_MAJOR}.${MIN_PY_MINOR}+ required. Found: $("$py" --version 2>&1)"
+        die \
+            "Python ${MIN_PY_MAJOR}.${MIN_PY_MINOR}+ is required. Found: $("$py" --version 2>&1)"
     fi
 
     ok "Python: $("$py" --version 2>&1)"
 }
 
-# ─── 3. Linux system dependencies ────────────────────────────
-install_linux_dependencies() {
-    [ "$(uname -s)" != "Linux" ] && return 0
+# ─── 3. pipx check ────────────────────────────────────────────
 
-    if ! command -v apt-get >/dev/null 2>&1; then
-        warn "apt-get not found. Skipping automatic Linux system dependency installation."
-        warn "Make sure Python venv/build tools and WeasyPrint system libraries are installed."
+ensure_pipx() {
+    export PATH="$HOME/.local/bin:$PATH"
+
+    if command -v pipx >/dev/null 2>&1; then
+        ok "pipx: $(pipx --version)"
         return 0
     fi
 
-    log "Installing required Linux system dependencies..."
+    die "pipx is required but was not found.
 
-    sudo apt-get update
+Install pipx using your operating system package manager,
+then run this installer again.
 
-    sudo apt-get install -y \
-        python3-venv \
-        python3-dev \
-        build-essential \
-        pipx \
-        libpango-1.0-0 \
-        libpangoft2-1.0-0 \
-        libharfbuzz0b \
-        libharfbuzz-subset0 \
-        libffi-dev \
-        libjpeg-dev \
-        libopenjp2-7-dev
-
-    ok "Linux system dependencies ready"
+No system package changes were made by SpiderForge."
 }
 
-# ─── 4. pipx ──────────────────────────────────────────────────
-ensure_pipx() {
-    if command -v pipx >/dev/null 2>&1; then
-        ok "pipx: $(pipx --version)"
-        return
-    fi
+# ─── 4. Install SpiderForge ──────────────────────────────────
 
-    die "pipx installation failed or is unavailable."
-}
-
-# ─── 5. Install SpiderForge ──────────────────────────────────
 install_spiderforge() {
     log "Installing ${APP_NAME} with full feature set..."
 
+    # Core + Web Dashboard + PDF + Browser
     pipx install --force \
         ".[web,pdf,browser]"
 
     ok "${APP_NAME} installed"
 }
 
-# ─── 6. Browser setup ─────────────────────────────────────────
+# ─── 5. Browser setup ─────────────────────────────────────────
+
 install_browser() {
     export PATH="$HOME/.local/bin:$PATH"
 
     if ! command -v spiderforge >/dev/null 2>&1; then
-        die "SpiderForge command not found after installation."
+        die "SpiderForge command was not found after installation."
     fi
 
-    log "Installing Playwright browser..."
+    if ! command -v playwright >/dev/null 2>&1; then
+        warn "Playwright command was not found."
+        warn "Browser support may require manual Playwright setup."
+        return 0
+    fi
 
-    if spiderforge --help >/dev/null 2>&1; then
-        if command -v playwright >/dev/null 2>&1; then
-            playwright install chromium
-            ok "Playwright Chromium ready"
-        else
-            warn "Playwright command not exposed by pipx environment."
-            warn "Browser support may require manual Playwright setup."
-        fi
+    log "Installing Chromium for Playwright..."
+
+    if playwright install chromium; then
+        ok "Playwright Chromium ready"
+    else
+        warn "Chromium installation failed."
+        warn "SpiderForge core features remain installed."
+        warn "Browser-based features may require manual Playwright setup."
     fi
 }
 
-# ─── 7. Data directories ─────────────────────────────────────
+# ─── 6. Create SpiderForge directories ───────────────────────
+
 create_dirs() {
     mkdir -p "$HOME/.spiderforge/workspaces"
     mkdir -p "$HOME/.spiderforge/logs"
     mkdir -p "$HOME/.config/spiderforge"
 
-    ok "Created ~/.spiderforge and ~/.config/spiderforge"
+    ok "SpiderForge directories ready"
 }
 
-# ─── 8. Health check ──────────────────────────────────────────
+# ─── 7. Verify installation ──────────────────────────────────
+
 health_check() {
     export PATH="$HOME/.local/bin:$PATH"
 
-    if command -v "$APP_NAME" >/dev/null 2>&1; then
-        log "Running doctor..."
+    command -v "$APP_NAME" >/dev/null 2>&1 || \
+        die "${APP_NAME} command is not available on PATH."
 
-        if "$APP_NAME" doctor; then
-            ok "SpiderForge doctor passed"
-        else
-            die "SpiderForge doctor reported errors."
-        fi
+    log "Running SpiderForge doctor..."
+
+    if "$APP_NAME" doctor; then
+        ok "SpiderForge doctor completed successfully"
     else
-        die "${APP_NAME} command not found."
+        die "SpiderForge doctor reported errors."
     fi
 }
 
 # ─── Main ─────────────────────────────────────────────────────
+
 banner
 
 check_python
-install_linux_dependencies
 ensure_pipx
 install_spiderforge
 create_dirs
