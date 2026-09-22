@@ -1,4 +1,4 @@
-<h1 align="center">🕷️ SpiderForge</h1>
+<h1 align="center">🕷️ SpiderForge 🕷️</h1>
 
 <p align="center">
   <b>Automated Web Reconnaissance, Crawling & Security Assessment Framework</b>
@@ -6,7 +6,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/version-3.0.0-blue.svg" alt="Version">
-  <img src="https://img.shields.io/badge/Python-3.10%2B-blue.svg" alt="Python Version">
+  <img src="https://img.shields.io/badge/Python-3.11%2B-blue.svg" alt="Python Version">
   <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License">
   <img src="https://img.shields.io/badge/Platform-Linux%20%7C%20macOS%20%7C%20Windows%20(WSL)-orange.svg" alt="Platform">
   <img src="https://img.shields.io/badge/Status-Active-brightgreen.svg" alt="Status">
@@ -20,28 +20,23 @@
 
 ---
 
-## ⚡ Quick Start (2 minutes)
-
-```bash
-# 1. Install
-pipx install spiderforge
-
-# 2. Launch the interactive control center
-spiderforge
-
-# 3. Or jump straight to the web dashboard
-spiderforge web
-```
-
-That's it. The browser opens automatically at `http://127.0.0.1:8000`.
-
-For the full install (with web dashboard + PDF export + optional anonymity deps):
+## ⚡ Quick Start (one command)
 
 ```bash
 git clone https://github.com/milesmaro2006-dev/spider-forge.git
-cd spider-forge
-chmod +x scripts/install.sh && ./scripts/install.sh
+cd spider-forge/scripts
+bash install.sh
 ```
+
+That's it. The installer is fully automated — no questions, no system package changes, no apt calls.
+
+Then launch:
+
+```bash
+spiderforge
+```
+
+Pick `[1] Run Full Assessment` or `[2] Launch Web Dashboard` from the interactive menu.
 
 ---
 
@@ -50,103 +45,57 @@ chmod +x scripts/install.sh && ./scripts/install.sh
 <details open>
 <summary><b>1. Interactive Control Center</b></summary>
 <br>
-<img width="1459" height="585" alt="Interactive CLI" src="https://github.com/user-attachments/assets/a4333c28-c886-4eb4-8731-c5662fe4652a" />
+<img src="docs/images/1-interactive-cli.png" alt="Interactive CLI" width="900" />
 </details>
 
 <details>
-<summary><b>2. Full Security Assessment Engine</b></summary>
+<summary><b>2. Persistent Web Dashboard (FastAPI GUI)</b></summary>
 <br>
-<img width="1728" height="726" alt="Assessment" src="https://github.com/user-attachments/assets/40769591-9f98-4c86-b929-8e283d9aa240" />
+<img src="docs/images/2-web-dashboard.png" alt="Web Dashboard" width="1100" />
 </details>
 
 <details>
-<summary><b>3. Persistent Web Dashboard (FastAPI GUI)</b></summary>
+<summary><b>3. Scans & Assessment History</b></summary>
 <br>
-<img width="1918" height="797" alt="Web Dashboard" src="https://github.com/user-attachments/assets/4282862d-b371-4546-b08e-aaae94a67839" />
+<img src="docs/images/3-scans-page.png" alt="Scans Page" width="1100" />
 </details>
 
 <details>
-<summary><b>4. Passive & Active Reconnaissance Pipeline</b></summary>
+<summary><b>4. System Diagnostics (Pre-flight Doctor)</b></summary>
 <br>
-<img width="1485" height="724" alt="Recon" src="https://github.com/user-attachments/assets/85f5b2f3-8501-43a9-98a1-2324b5c0996c" />
+<img src="docs/images/4-doctor.png" alt="Doctor" width="900" />
 </details>
-
-<details>
-<summary><b>5. Multi-Format Report Generator</b></summary>
-<br>
-<img width="1919" height="725" alt="Reports" src="https://github.com/user-attachments/assets/0cfe49d0-b3ed-4aaa-bbef-422e7650706b" />
-</details>
-
-<details>
-<summary><b>6. System Diagnostics (Pre-flight Doctor)</b></summary>
-<br>
-<img width="1173" height="648" alt="Doctor" src="https://github.com/user-attachments/assets/1e6e3c76-d94e-4d9c-8eeb-cf6c8d0a1eb3" />
-</details>
-
 ---
 
 ## 📦 Installation
 
-### Option 1 — pipx (recommended)
+### Requirements
 
-```bash
-pipx install spiderforge
-```
+| Requirement | Notes |
+|---|---|
+| Linux / macOS / WSL | Native Windows is not supported (use WSL) |
+| Python 3.11+ | 3.10 is not supported |
+| pipx | Required. Install via your OS package manager if missing |
+| git | For cloning the repository |
 
-Then inject optional extras:
+SpiderForge's installer does not touch system packages. If `pipx` or Python is missing, the installer stops and tells you what to install — it never runs `apt update`, `apt upgrade`, or `apt install`.
 
-```bash
-# Web dashboard (FastAPI + uvicorn)
-pipx inject spiderforge fastapi "uvicorn[standard]"
-
-# PDF export (needs system libs — see Troubleshooting)
-pipx inject spiderforge weasyprint
-
-# Anonymity layer (SOCKS proxy support)
-pipx inject spiderforge socksio
-
-# Playwright (JS-heavy apps, ~200 MB)
-pipx inject spiderforge playwright
-playwright install chromium
-```
-
-### Option 2 — from source (editable)
+### Install
 
 ```bash
 git clone https://github.com/milesmaro2006-dev/spider-forge.git
-cd spider-forge
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -e ".[web,pdf,dev]"
+cd spider-forge/scripts
+bash install.sh
 ```
 
-### Option 3 — one-line install script
+What the installer does, in order:
 
-```bash
-git clone https://github.com/milesmaro2006-dev/spider-forge.git
-cd spider-forge
-chmod +x scripts/install.sh
-./scripts/install.sh
-```
-
-The installer walks you through:
-
-1. ✅ Verifies Python version (3.10+ required)
-2. ✅ Installs `pipx` if missing
-3. ✅ Installs SpiderForge core
-4. ❓ Asks if you want the **Web Dashboard** (FastAPI + uvicorn)
-5. ❓ Asks if you want **PDF export** (WeasyPrint)
-6. ❓ Asks if you want the **Anonymity Layer** (socksio)
-7. ✅ Creates `~/.spiderforge/` and `~/.config/spiderforge/`
-8. ✅ Runs a system health check
-
-### Option 4 — tarball
-
-```bash
-tar -xzf spiderforge-v3.0.0.tar.gz
-cd spiderforge-v3.0.0
-pipx install --force .
-```
+1. Verifies Python 3.11+
+2. Verifies pipx
+3. Installs SpiderForge via `pipx install --force ".[web,pdf,browser]"`
+4. Creates `~/.spiderforge/workspaces`, `~/.spiderforge/logs`, `~/.config/spiderforge`
+5. Downloads Playwright Chromium (~300 MB, first time only)
+6. Runs `spiderforge doctor` and reports health
 
 ### Verify installation
 
@@ -161,6 +110,23 @@ Expected output:
 │ Checks: 22   PASS: 22   WARN: 0   FAIL: 0 │
 │ System Status: Ready                      │
 ╰───────────────────────────────────────────╯
+```
+
+### PyPI install
+
+Not yet available. Tracked under Phase F — Ecosystem in the roadmap below.
+
+### Developer install (editable)
+
+For contributors who need to edit the source live:
+
+```bash
+git clone https://github.com/milesmaro2006-dev/spider-forge.git
+cd spider-forge
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -e ".[web,pdf,browser,dev]"
+python -m playwright install chromium
 ```
 
 ---
@@ -209,20 +175,20 @@ spiderforge doctor --cli-only
 
 ## 🛡️ Anonymity & Privacy Layer (v3.0.0 — New)
 
-SpiderForge v3.0.0 ships with a **built-in anonymity layer** for authorized engagements where source IP hygiene, request pacing, and fingerprint normalization matter.
+SpiderForge v3.0.0 ships with a built-in anonymity layer for authorized engagements where source IP hygiene, request pacing, and fingerprint normalization matter.
 
-Every request still flows through `SafeHttpClient` with SSRF protection intact — the anonymity layer is a **wrapper**, not a bypass.
+Every request still flows through `SafeHttpClient` with SSRF protection intact — the anonymity layer is a wrapper, not a bypass.
 
 ### What it does
 
-- **Proxy rotation** (HTTP / HTTPS / SOCKS4 / SOCKS5) with health checks
-- **User-Agent rotation** from a curated pool of real-world browser signatures
-- **Header profile normalization** (Chrome / Firefox / Safari / curl / mobile)
-- **Request pacing** (fixed / jittered / adaptive delays)
-- **Cookie jar isolation** per scan workspace
-- **DNS-over-HTTPS** (Cloudflare / Google / Quad9 / custom resolver)
-- **Fingerprint randomization** (TLS hints, header order, Accept-Language)
-- **Pre-flight health checks** — scan fails loudly if the anonymity layer is unhealthy
+- Proxy rotation (HTTP / HTTPS / SOCKS4 / SOCKS5) with health checks
+- User-Agent rotation from a curated pool of real-world browser signatures
+- Header profile normalization (Chrome / Firefox / Safari / curl / mobile)
+- Request pacing (fixed / jittered / adaptive delays)
+- Cookie jar isolation per scan workspace
+- DNS-over-HTTPS (Cloudflare / Google / Quad9 / custom resolver)
+- Fingerprint randomization (TLS hints, header order, Accept-Language)
+- Pre-flight health checks — scan fails loudly if the anonymity layer is unhealthy
 
 ### Enable from CLI
 
@@ -264,7 +230,7 @@ spiderforge anonymity test
 
 ### Auto-load in scans
 
-When anonymity is enabled, `spiderforge scan run` **auto-loads** the layer. If the proxy is unreachable, the scan fails immediately with a fatal error — no silent fallback to your real IP.
+When anonymity is enabled, `spiderforge scan run` auto-loads the layer. If the proxy is unreachable, the scan fails immediately with a fatal error — no silent fallback to your real IP.
 
 ```bash
 spiderforge scan run https://example.com --anonymity
@@ -319,7 +285,7 @@ randomize_header_order = true
 randomize_accept_language = true
 ```
 
-> ⚠️ **Legal:** the anonymity layer is for **authorized engagements only**. It does not grant permission to test systems you don't own.
+> ⚠️ **Legal:** the anonymity layer is for authorized engagements only. It does not grant permission to test systems you don't own.
 
 ---
 
@@ -350,8 +316,8 @@ spiderforge web --reset-config
 
 On first launch, SpiderForge asks for:
 
-- **Port** (default `8000`)
-- **Auto-open browser** (yes / no)
+- Port (default 8000)
+- Auto-open browser (yes / no)
 
 Preferences are saved to `~/.spiderforge/web.toml`:
 
@@ -440,7 +406,7 @@ spiderforge <command> --help
 | File Upload Security | Active | Medium |
 | IDOR Candidates | Active | Medium |
 
-> Detection modules assist authorized security assessments. Always manually validate results before treating them as confirmed vulnerabilities.
+Detection modules assist authorized security assessments. Always manually validate results before treating them as confirmed vulnerabilities.
 
 ---
 
@@ -477,7 +443,7 @@ Finding Management
 Report Generation ──► JSON / MD / HTML / PDF
 ```
 
-### Design principles
+Design principles:
 
 - **Scope First** — every request is validated against scope before dispatch
 - **Evidence Driven** — every finding carries enough evidence to reproduce it
@@ -520,7 +486,7 @@ spider-forge/
 │
 ├── frontend/                     # Source frontend (mirror)
 ├── scripts/
-│   ├── install.sh                # POSIX bash ✨
+│   ├── install.sh                # POSIX bash installer ✨
 │   └── install.ps1               # Windows legacy
 ├── examples/
 │   ├── config.yaml
@@ -548,7 +514,7 @@ spider-forge/
 
 Config lives under `~/.config/spiderforge/`. Data lives under `~/.spiderforge/`.
 
-### `~/.config/spiderforge/config.yaml`
+`~/.config/spiderforge/config.yaml`:
 
 ```yaml
 scanner:
@@ -572,7 +538,7 @@ logging:
   level: INFO
 ```
 
-### `~/.spiderforge/web.toml`
+`~/.spiderforge/web.toml`:
 
 ```toml
 [web]
@@ -584,7 +550,7 @@ accent = "blue"
 first_run_done = true
 ```
 
-### `~/.config/spiderforge/anonymity.toml`
+`~/.config/spiderforge/anonymity.toml`:
 
 See the **Anonymity & Privacy Layer** section above for the full schema.
 
@@ -605,48 +571,46 @@ See the **Anonymity & Privacy Layer** section above for the full schema.
 
 ### `spiderforge web` says "Could not find the SpiderForge backend"
 
-- Run `spiderforge web` from inside the project checkout, **or**
-- Set `SPIDERFORGE_ROOT=/path/to/spider-forge`, **or**
-- Reinstall: `pipx install --force .` to refresh site-packages
+Run `spiderforge web` from inside the project checkout, or
+
+Set `SPIDERFORGE_ROOT=/path/to/spider-forge`, or
+
+Reinstall: `pipx install --force .` to refresh site-packages
 
 ### Frontend shows JSON `{"status": "online"}` instead of the UI
 
 The frontend bundle wasn't shipped. Fix:
 
 ```bash
-pipx install --force .
+cd /path/to/spider-forge
+pipx install --force ".[web,pdf,browser]"
 ```
 
 Or set `SPIDERFORGE_FRONTEND_DIR=/path/to/frontend`.
 
 ### PDF export fails
 
-WeasyPrint needs system libraries:
+WeasyPrint needs system libraries. SpiderForge's installer does not install them automatically (to avoid touching system packages).
 
-```bash
-# Debian / Ubuntu / Kali
-sudo apt install libpango-1.0-0 libpangoft2-1.0-0 libcairo2 libgdk-pixbuf-2.0-0
-```
+If PDF is a hard requirement, install these manually with your OS package manager:
 
-Other report formats keep working — the API reports PDF as `unavailable` with a reason.
+- **Debian / Ubuntu / Kali:** `libpango-1.0-0`, `libpangoft2-1.0-0`, `libcairo2`, `libgdk-pixbuf-2.0-0`
+- **macOS:** `brew install pango cairo gdk-pixbuf`
+- **Fedora:** `pango pango-devel cairo gdk-pixbuf2`
 
-### `uvicorn` not found
-
-```bash
-pipx inject spiderforge fastapi "uvicorn[standard]"
-```
+Other report formats keep working — the API reports PDF as unavailable with a reason.
 
 ### SOCKS proxy fails with `Missing dependencies for SOCKS support`
+
+SpiderForge requires `socksio>=1.0.0` (declared in `pyproject.toml`). It's already included in the `[web,pdf,browser]` install performed by `install.sh`. If you installed manually:
 
 ```bash
 pipx inject spiderforge socksio
 ```
 
-SpiderForge requires `socksio>=1.0.0` (declared in `pyproject.toml`) for SOCKS4/SOCKS5 support.
-
 ### Proxy unreachable during scan
 
-SpiderForge **fails loudly** when anonymity is enabled and the proxy is unhealthy. This is intentional — there's no silent fallback to your real IP.
+SpiderForge fails loudly when anonymity is enabled and the proxy is unhealthy. This is intentional — there's no silent fallback to your real IP.
 
 Diagnose:
 
@@ -661,27 +625,29 @@ spiderforge anonymity test
 spiderforge web --port 9000
 ```
 
-### `tomli` / `tomli_w` missing on Python 3.10
-
-```bash
-pipx inject spiderforge tomli tomli-w
-```
-
-Python 3.11+ has `tomllib` built in — only `tomli_w` is needed for writing.
-
 ### Verbose debugging
 
 ```bash
 SPIDERFORGE_DEBUG=1 spiderforge scan run https://example.com
 ```
 
+### Reinstalling from scratch
+
+```bash
+pipx uninstall spiderforge
+git clone https://github.com/milesmaro2006-dev/spider-forge.git
+cd spider-forge/scripts
+bash install.sh
+```
+
 ---
 
 ## ⚠️ Known Issues
 
-- **Ruff `B904` / `SIM102`** — deferred to Phase E (tracked in `pyproject.toml` ignore list, not silenced silently)
+- **Ruff B904 / SIM102** — deferred to Phase E (tracked in `pyproject.toml` ignore list, not silenced silently)
 - **`scripts/install.ps1`** — kept as a Windows legacy fallback; `scripts/install.sh` is the canonical installer
-- **Playwright** requires a ~200 MB Chromium download on first install
+- **Playwright** requires a ~300 MB Chromium download on first install (once per user, cached in `~/.cache/ms-playwright`)
+- **PyPI release** — not yet available, install from source via the script (tracked under Phase F)
 
 ---
 
@@ -696,7 +662,7 @@ SPIDERFORGE_DEBUG=1 spiderforge scan run https://example.com
 - [x] FastAPI web dashboard (standalone, first-run wizard)
 - [x] Anonymity layer (15 subcommands, proxy rotation, DoH, fingerprint)
 - [x] System Doctor (health checks with exit codes)
-- [x] pipx install flow + POSIX `install.sh`
+- [x] pipx-based POSIX `install.sh` (fully automated, no system packages)
 - [x] 304 tests passing · 0 ruff errors · 0 mypy errors in core
 
 ### 🚧 Phase D — Reporting & Evidence Depth
@@ -708,14 +674,14 @@ SPIDERFORGE_DEBUG=1 spiderforge scan run https://example.com
 
 ### 📋 Phase E — Code Quality & Compliance
 
-- [ ] Resolve `B904` / `SIM102` ruff ignores
-- [ ] Full mypy coverage (not just `core`)
+- [ ] Resolve B904 / SIM102 ruff ignores
+- [ ] Full mypy coverage (not just core)
 - [ ] Pre-commit hooks
 - [ ] Type stubs for all public APIs
 
 ### 🔭 Phase F — Ecosystem
 
-- [ ] PyPI stable release
+- [ ] PyPI stable release (enables `pipx install spiderforge`)
 - [ ] Docker image
 - [ ] Nuclei / FFUF deep integration
 - [ ] Community plugin API
@@ -724,7 +690,7 @@ SPIDERFORGE_DEBUG=1 spiderforge scan run https://example.com
 
 ## ⚠️ Legal Disclaimer
 
-SpiderForge is intended **only for authorized security testing, research, education, and defensive security assessments**.
+SpiderForge is intended only for authorized security testing, research, education, and defensive security assessments.
 
 You must have explicit permission before scanning, crawling, fuzzing, or testing any system that you do not own or have authorization to assess.
 
@@ -736,7 +702,7 @@ The authors and contributors are not responsible for misuse, damage, or unauthor
 
 ## 📄 License
 
-SpiderForge is released under the **MIT License**. See [`LICENSE`](LICENSE) for the full text.
+SpiderForge is released under the MIT License. See [LICENSE](LICENSE) for the full text.
 
 ---
 
@@ -745,9 +711,7 @@ SpiderForge is released under the **MIT License**. See [`LICENSE`](LICENSE) for 
 **Amr Shaban**  
 Cybersecurity Student — Offensive Security & Web Application Security
 
-GitHub: [https://github.com/milesmaro2006-dev](https://github.com/milesmaro2006-dev)
-
----
+- GitHub: https://github.com/milesmaro2006-dev
 
 <p align="center">
   <sub>Built with ❤️ for the security community</sub>
