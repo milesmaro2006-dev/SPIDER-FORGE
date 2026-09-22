@@ -5,7 +5,8 @@
 set -euo pipefail
 
 APP_NAME="spiderforge"
-MIN_PY="3.10"
+MIN_PY_MAJOR=3
+MIN_PY_MINOR=11
 
 log()  { printf '\033[36m[%s]\033[0m %s\n' "$APP_NAME" "$*"; }
 ok()   { printf '\033[32m[OK]\033[0m %s\n' "$*"; }
@@ -25,100 +26,141 @@ cat <<'EOF'
 EOF
 }
 
-# ─── 1. Python check ──────────────────────────────────────────
+# ─── 1. Locate project ────────────────────────────────────────
+REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$REPO_DIR"
+
+# ─── 2. Python check ──────────────────────────────────────────
 check_python() {
     local py
-    py="$(command -v python3 || true)"
-    [ -z "$py" ] && die "python3 not found. Install Python ${MIN_PY}+."
 
-    if ! "$py" -c "import sys; sys.exit(0 if sys.version_info[:2] >= (3,10) else 1)"; then
-        die "Python ${MIN_PY}+ required. Found: $("$py" --version 2>&1)"
+    py="$(command -v python3 || true)"
+
+    [ -z "$py" ] && die "python3 not found. Install Python ${MIN_PY_MAJOR}.${MIN_PY_MINOR}+."
+
+    if ! "$py" -c "
+import sys
+sys.exit(
+    0 if sys.version_info[:2] >= (${MIN_PY_MAJOR}, ${MIN_PY_MINOR}) else 1
+)
+"; then
+        die "Python ${MIN_PY_MAJOR}.${MIN_PY_MINOR}+ required. Found: $("$py" --version 2>&1)"
     fi
+
     ok "Python: $("$py" --version 2>&1)"
 }
 
-# ─── 2. pipx ──────────────────────────────────────────────────
+# ─── 3. Linux system dependencies ────────────────────────────
+install_linux_dependencies() {
+    [ "$(uname -s)" != "Linux" ] && return 0
+
+    if ! command -v apt-get >/dev/null 2>&1; then
+        warn "apt-get not found. Skipping automatic Linux system dependency installation."
+        warn "Make sure Python venv/build tools and WeasyPrint system libraries are installed."
+        return 0
+    fi
+
+    log "Installing required Linux system dependencies..."
+
+    sudo apt-get update
+
+    sudo apt-get install -y \
+        python3-venv \
+        python3-dev \
+        build-essential \
+        pipx \
+        libpango-1.0-0 \
+        libpangoft2-1.0-0 \
+        libharfbuzz0b \
+        libharfbuzz-subset0 \
+        libffi-dev \
+        libjpeg-dev \
+        libopenjp2-7-dev
+
+    ok "Linux system dependencies ready"
+}
+
+# ─── 4. pipx ──────────────────────────────────────────────────
 ensure_pipx() {
     if command -v pipx >/dev/null 2>&1; then
         ok "pipx: $(pipx --version)"
         return
     fi
-    warn "pipx not found — installing..."
-    python3 -m pip install --user --upgrade pipx
-    python3 -m pipx ensurepath || true
-    export PATH="$HOME/.local/bin:$PATH"
-    command -v pipx >/dev/null 2>&1 || die "pipx install failed"
-    ok "pipx installed"
+
+    die "pipx installation failed or is unavailable."
 }
 
-# ─── 3. Locate project ────────────────────────────────────────
-REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-cd "$REPO_DIR"
+# ─── 5. Install SpiderForge ──────────────────────────────────
+install_spiderforge() {
+    log "Installing ${APP_NAME} with full feature set..."
 
-# ─── 4. Install core ──────────────────────────────────────────
-install_core() {
-    log "Installing ${APP_NAME} from $REPO_DIR..."
-    pipx install --force . 2>&1 | tail -5
+    pipx install --force \
+        ".[web,pdf,browser]"
+
     ok "${APP_NAME} installed"
 }
 
-# ─── 5. Optional: web ─────────────────────────────────────────
-install_web() {
-    printf '\n[?] Install Web Dashboard (fastapi + uvicorn)? [y/N] '
-    read -r answer
-    case "$answer" in
-        [yY]|[yY][eE][sS])
-            pipx inject "$APP_NAME" fastapi 'uvicorn[standard]' 2>&1 | tail -3
-            ok "Web Dashboard ready"
-            ;;
-        *) log "Skipped web dashboard" ;;
-    esac
+# ─── 6. Browser setup ─────────────────────────────────────────
+install_browser() {
+    export PATH="$HOME/.local/bin:$PATH"
+
+    if ! command -v spiderforge >/dev/null 2>&1; then
+        die "SpiderForge command not found after installation."
+    fi
+
+    log "Installing Playwright browser..."
+
+    if spiderforge --help >/dev/null 2>&1; then
+        if command -v playwright >/dev/null 2>&1; then
+            playwright install chromium
+            ok "Playwright Chromium ready"
+        else
+            warn "Playwright command not exposed by pipx environment."
+            warn "Browser support may require manual Playwright setup."
+        fi
+    fi
 }
 
-# ─── 6. Optional: PDF ─────────────────────────────────────────
-install_pdf() {
-    printf '\n[?] Install PDF export (weasyprint)? [y/N] '
-    read -r answer
-    case "$answer" in
-        [yY]|[yY][eE][sS])
-            warn "WeasyPrint needs system libs (pango, cairo). See README."
-            pipx inject "$APP_NAME" weasyprint 2>&1 | tail -3
-            ok "PDF export installed"
-            ;;
-        *) log "Skipped PDF" ;;
-    esac
-}
-
-# ─── 7. Data dirs ─────────────────────────────────────────────
+# ─── 7. Data directories ─────────────────────────────────────
 create_dirs() {
     mkdir -p "$HOME/.spiderforge/workspaces"
     mkdir -p "$HOME/.spiderforge/logs"
     mkdir -p "$HOME/.config/spiderforge"
+
     ok "Created ~/.spiderforge and ~/.config/spiderforge"
 }
 
 # ─── 8. Health check ──────────────────────────────────────────
 health_check() {
     export PATH="$HOME/.local/bin:$PATH"
+
     if command -v "$APP_NAME" >/dev/null 2>&1; then
         log "Running doctor..."
-        "$APP_NAME" doctor || true
+
+        if "$APP_NAME" doctor; then
+            ok "SpiderForge doctor passed"
+        else
+            die "SpiderForge doctor reported errors."
+        fi
     else
-        warn "${APP_NAME} not on PATH yet. Restart your shell or run:"
-        echo "  export PATH=\"\$HOME/.local/bin:\$PATH\""
+        die "${APP_NAME} command not found."
     fi
 }
 
 # ─── Main ─────────────────────────────────────────────────────
 banner
+
 check_python
+install_linux_dependencies
 ensure_pipx
-install_core
-install_web
-install_pdf
+install_spiderforge
 create_dirs
+install_browser
 health_check
 
 echo
 ok "Installation complete!"
-echo "Run: spiderforge"
+echo
+echo "Run:"
+echo "  spiderforge"
+echo
