@@ -1,53 +1,155 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="color-scheme" content="dark">
-    <title>SpiderForge</title>
-    <link rel="stylesheet" href="/styles.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="description" content="SpiderForge — Automated Web Reconnaissance & Security Assessment" />
+    <title>SpiderForge — Web Security Assessment</title>
+    <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
 
-<div class="app">
+<div class="app-shell" id="app-shell">
 
-    <header class="topbar">
-        <a href="#/" class="brand">
-            <svg class="brand-logo" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <ellipse cx="12" cy="15" rx="3.2" ry="4.5" fill="currentColor"/>
-                <circle cx="12" cy="8" r="2.3" fill="currentColor"/>
-                <g stroke="currentColor" stroke-width="0.9" stroke-linecap="round" opacity="0.85">
-                    <path d="M12 11 L5 7"/><path d="M12 11 L3.5 12"/>
-                    <path d="M12 11 L5 16"/><path d="M12 11 L7.5 19"/>
-                    <path d="M12 11 L19 7"/><path d="M12 11 L20.5 12"/>
-                    <path d="M12 11 L19 16"/><path d="M12 11 L16.5 19"/>
-                </g>
-            </svg>
-            <div class="brand-text">
-                <span class="brand-name">SpiderForge</span>
-                <span class="brand-sub">Web Security Assessment</span>
-            </div>
-        </a>
+    <!-- ═══════════════ Sidebar ═══════════════ -->
+    <aside class="sidebar" id="sidebar" aria-label="Primary">
 
-        <nav class="nav">
-            <a href="#/" data-nav="dashboard">Dashboard</a>
-            <a href="#/scans" data-nav="scans">Scans</a>
+        <div class="sidebar-head">
+            <a class="brand" href="#/" aria-label="SpiderForge home">
+                <span class="brand-mark" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="2.7" fill="currentColor"/>
+                        <g stroke="currentColor" stroke-width="1.05" stroke-linecap="round" opacity="0.85">
+                            <path d="M12 9.3 V3.2"/>
+                            <path d="M12 14.7 V20.8"/>
+                            <path d="M9.3 12 H3.2"/>
+                            <path d="M14.7 12 H20.8"/>
+                            <path d="M10.1 10.1 L5.7 5.7"/>
+                            <path d="M13.9 10.1 L18.3 5.7"/>
+                            <path d="M10.1 13.9 L5.7 18.3"/>
+                            <path d="M13.9 13.9 L18.3 18.3"/>
+                        </g>
+                        <circle cx="12" cy="12" r="6.4" stroke="currentColor"
+                                stroke-width="0.7" opacity="0.3" fill="none"/>
+                        <circle cx="12" cy="12" r="9.2" stroke="currentColor"
+                                stroke-width="0.55" opacity="0.14" fill="none"/>
+                    </svg>
+                </span>
+                <span class="brand-text">
+                    <span class="brand-name">Spider<span class="brand-accent">Forge</span></span>
+                    <span class="brand-sub">Recon &amp; Assessment</span>
+                </span>
+            </a>
+        </div>
+
+        <nav class="sidebar-nav" aria-label="Main">
+            <a class="nav-item" href="#/" data-nav="dashboard">
+                <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7.5" height="9" rx="1.6"/>
+                    <rect x="13.5" y="3" width="7.5" height="5.5" rx="1.6"/>
+                    <rect x="13.5" y="11.5" width="7.5" height="9.5" rx="1.6"/>
+                    <rect x="3" y="15" width="7.5" height="6" rx="1.6"/>
+                </svg>
+                <span>Dashboard</span>
+            </a>
+            <a class="nav-item" href="#/scans" data-nav="scans">
+                <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="9"/>
+                    <path d="M12 3v9l6.4 4"/>
+                </svg>
+                <span>Scans</span>
+            </a>
+            <a class="nav-item" href="#/findings" data-nav="findings">
+                <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 3.5v3"/>
+                    <path d="M12 17.5v3"/>
+                    <path d="M3.5 12h3"/>
+                    <path d="M17.5 12h3"/>
+                    <path d="M6 6l2.1 2.1"/>
+                    <path d="M15.9 15.9L18 18"/>
+                    <path d="M6 18l2.1-2.1"/>
+                    <path d="M15.9 8.1L18 6"/>
+                    <circle cx="12" cy="12" r="3.4"/>
+                </svg>
+                <span>Findings</span>
+            </a>
+            <a class="nav-item" href="#/reports" data-nav="reports">
+                <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 3.2H7.2A2.2 2.2 0 0 0 5 5.4v13.2a2.2 2.2 0 0 0 2.2 2.2h9.6a2.2 2.2 0 0 0 2.2-2.2V8z"/>
+                    <path d="M14 3.2V8h4.9"/>
+                    <path d="M9 13.5h6"/>
+                    <path d="M9 17h4"/>
+                </svg>
+                <span>Reports</span>
+            </a>
         </nav>
 
-        <div class="status-pill" id="status-pill">
-            <span class="status-dot" id="status-dot"></span>
-            <span id="status-text">checking…</span>
+        <div class="sidebar-section">System</div>
+
+        <nav class="sidebar-nav" aria-label="System">
+            <a class="nav-item" href="#/settings" data-nav="settings">
+                <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+                <span>Settings</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-foot">
+            <div class="engine-status" id="engine-status" title="Backend status">
+                <span class="status-dot" id="status-dot"></span>
+                <div class="engine-meta">
+                    <span class="engine-label">Engine</span>
+                    <span class="engine-value" id="status-text">checking…</span>
+                </div>
+            </div>
         </div>
-    </header>
+    </aside>
 
-    <main id="app" class="main"></main>
+    <button class="sidebar-overlay" id="sidebar-overlay" aria-label="Close menu" tabindex="-1"></button>
 
-    <footer class="footer">
-        <span>SpiderForge v3.0</span>
-        <span class="dot-sep">·</span>
-        <span>Authorized testing only</span>
-    </footer>
+    <!-- ═══════════════ Main ═══════════════ -->
+    <div class="main">
+        <header class="mobile-bar">
+            <button class="icon-btn" id="menu-btn" aria-label="Open menu">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/>
+                </svg>
+            </button>
+            <span class="mobile-brand">Spider<span class="brand-accent">Forge</span></span>
+            <span class="status-dot mobile-dot" id="status-dot-mobile"></span>
+        </header>
 
+        <main id="app" class="content" tabindex="-1"></main>
+    </div>
+
+</div>
+
+<!-- Toast host -->
+<div class="toast-host" id="toast-host" aria-live="polite" aria-atomic="false"></div>
+
+<!-- Scan operation overlay -->
+<div class="scan-overlay" id="scan-overlay" hidden>
+    <div class="scan-overlay-backdrop"></div>
+    <div class="scan-overlay-card" role="dialog" aria-modal="true" aria-labelledby="scan-ov-title">
+        <div class="scan-ov-head">
+            <span class="scan-ov-pulse"></span>
+            <div>
+                <h3 id="scan-ov-title">Assessment in progress</h3>
+                <p class="scan-ov-target" id="scan-ov-target">—</p>
+            </div>
+        </div>
+        <div class="scan-ov-bar">
+            <div class="scan-ov-bar-fill" id="scan-ov-bar"></div>
+        </div>
+        <div class="scan-ov-phase">
+            <span class="scan-ov-spinner"></span>
+            <span id="scan-ov-phase">Initializing engine…</span>
+        </div>
+        <p class="scan-ov-hint">This may take a moment. You'll be redirected to the report when it completes.</p>
+    </div>
 </div>
 
 <script src="/app.js"></script>
