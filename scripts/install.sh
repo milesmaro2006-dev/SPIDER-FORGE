@@ -99,15 +99,20 @@ install_browser() {
         die "SpiderForge command was not found after installation."
     fi
 
-    if ! command -v playwright >/dev/null 2>&1; then
-        warn "Playwright command was not found."
+    # pipx does not expose dependency CLIs (like `playwright`) on PATH.
+    # The Playwright CLI lives inside SpiderForge's own pipx venv.
+    local venv_dir="$HOME/.local/share/pipx/venvs/spiderforge"
+    local playwright_bin="$venv_dir/bin/playwright"
+
+    if [ ! -x "$playwright_bin" ]; then
+        warn "Playwright CLI not found inside the SpiderForge environment."
         warn "Browser support may require manual Playwright setup."
         return 0
     fi
 
     log "Installing Chromium for Playwright..."
 
-    if playwright install chromium; then
+    if "$playwright_bin" install chromium; then
         ok "Playwright Chromium ready"
     else
         warn "Chromium installation failed."
