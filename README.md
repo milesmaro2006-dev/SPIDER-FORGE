@@ -55,9 +55,9 @@ Pick `[1] Run Full Assessment` or `[2] Launch Web Dashboard` from the interactiv
 </details>
 
 <details>
-<summary><b>3. Scans & Assessment History</b></summary>
+<summary><b>3. Scan Detail — Findings & Reports</b></summary>
 <br>
-<img src="docs/images/3-scans-page.png" alt="Scans Page" width="1100" />
+<img src="docs/images/3-scan-detail.png" alt="Scan Detail" width="1100" />
 </details>
 
 <details>
@@ -65,6 +65,7 @@ Pick `[1] Run Full Assessment` or `[2] Launch Web Dashboard` from the interactiv
 <br>
 <img src="docs/images/4-doctor.png" alt="Doctor" width="900" />
 </details>
+
 ---
 
 ## 📦 Installation
@@ -170,6 +171,237 @@ spiderforge doctor
 spiderforge doctor --json
 spiderforge doctor --cli-only
 ```
+
+---
+
+## 🌐 Web Dashboard
+
+Fully standalone — no project directory required.
+
+### Launch
+
+```bash
+# Foreground (Ctrl+C to stop)
+spiderforge web --foreground
+
+# Background (detached — server survives shell exit)
+spiderforge web
+
+# Custom bind address / port
+spiderforge web --host 0.0.0.0 --port 9000
+
+# Do not open the browser
+spiderforge web --no-browser
+
+# Reset saved web config and re-run the first-run wizard
+spiderforge web --reset-config
+```
+
+### First-run wizard
+
+On first launch, SpiderForge asks for:
+
+- Port (default 8000)
+- Auto-open browser (yes / no)
+
+Preferences are saved to `~/.spiderforge/web.toml`:
+
+```toml
+[web]
+host = "127.0.0.1"
+port = 8000
+auto_open_browser = true
+theme = "dark"
+accent = "blue"
+first_run_done = true
+```
+
+Skip the wizard in scripts:
+
+```bash
+spiderforge web --port 9000 --no-browser
+```
+
+---
+
+### 🎨 Interface Overview
+
+The web UI is intentionally **minimal and focused** — three pages, one purpose: launch scans, review findings, download reports. No dashboards full of vanity metrics, no invented features, no bloat.
+
+The interface is built directly against the backend API surface. Every button, field, and page maps to a real endpoint. Nothing is mocked.
+
+#### Page 1 — Dashboard (`#/`)
+
+The landing page. Contains two blocks:
+
+**1. New Scan form**
+
+| Field | Maps to backend | Purpose |
+|---|---|---|
+| **Target URL** | `target` | The URL to scan (accepts with or without scheme) |
+| **Profile** | `max_urls`, `max_depth`, `concurrency`, `rate_limit` | Predefined crawl & scan intensity |
+| **Advanced options** (collapsible) | `scope_free`, `verify_tls`, `allow_private` | Fine-grained scan behavior |
+
+**Scan Profiles:**
+
+| Profile | max_urls | max_depth | concurrency | rate_limit |
+|---------|:--------:|:---------:|:-----------:|:----------:|
+| **Light** | 50 | 2 | 5 | 10 req/s |
+| **Balanced** ⭐ | 200 | 3 | 10 | 20 req/s |
+| **Deep** | 1000 | 5 | 20 | 30 req/s |
+
+**Advanced Options:**
+
+- **Open scope** — Skips hostname scope validation (behaves like Burp Suite / ZAP). SSRF, loopback, and cloud-metadata protection still apply. Useful when the target is an SPA that communicates with APIs on separate domains.
+- **Verify TLS certificates** — When enabled, refuses to connect to hosts with self-signed, expired, or untrusted certificates. Disable for internal dev servers or lab environments.
+- **Allow private / internal targets** — Permits scanning of private IP ranges (10.x, 172.16-31.x, 192.168.x), localhost, and link-local addresses. Off by default for SSRF safety.
+
+**2. Recent Scans table**
+
+Lists the last 50 scans from the database. Columns:
+
+- **ID** — Scan ID (clickable row → Scan Detail page)
+- **Target** — Hostname + path
+- **Status** — `created` · `running` · `completed` · `failed`
+- **Findings** — Count of findings recorded for that scan
+- **Started** — Timestamp + relative time
+- **Duration** — Scan duration (or `running…`)
+
+Click any row (or press `Enter` after tabbing to it) to open the scan detail.
+
+---
+
+#### Page 2 — Scan Detail (`#/scan/:id`)
+
+Opens after a scan completes, or when you click a row from the dashboard. Contains:
+
+**Metadata panel**
+Scan ID · Target · Status · Profile · Started · Finished · Duration · Findings · Discovered URLs · DB finding count.
+
+**Scan error alert** (conditional)
+If the scan aborted (proxy unreachable, DNS failure, scope violation, connection refused, etc.), the exact backend error is displayed here.
+
+**Scope panel** (conditional)
+Shows the `include` and `exclude` scope patterns persisted with the scan.
+
+**Reports panel**
+Download buttons for every format the backend supports. The PDF button is automatically disabled if WeasyPrint is unavailable on the server, with the reason shown as a tooltip.
+
+| Button | Endpoint |
+|---|---|
+| **View HTML** | `GET /api/scans/{id}/report?format=html` (opens in new tab) |
+| **JSON** | `GET /api/scans/{id}/report?format=json&download=true` |
+| **Markdown** | `GET /api/scans/{id}/report?format=md&download=true` |
+| **PDF** | `GET /api/scans/{id}/report?format=pdf&download=true` (if available) |
+| **Bundle (.zip)** | `GET /api/scans/{id}/report/bundle` (all formats + manifest) |
+
+**Findings section**
+Each finding is rendered as a card:
+
+```
+┌─────────────────────────────────────────────────┐
+│ Reflected XSS in Search              [ HIGH ]   │
+├─────────────────────────────────────────────────┤
+│ CVSS 6.1  URL /search.aspx  Param q  Method GET │
+│ Category  XSS  CWE  CWE-79  Scanner  xss        │
+├─────────────────────────────────────────────────┤
+│ Description:                                    │
+│ The application reflects unsanitized user...    │
+├─────────────────────────────────────────────────┤
+│ PAYLOAD                                         │
+│ <script>alert('XSS')</script>                   │
+├─────────────────────────────────────────────────┤
+│ EVIDENCE                                        │
+│ HTTP/1.1 200 OK ...                             │
+├─────────────────────────────────────────────────┤
+│ IMPACT                                          │
+│ Session hijacking, credential theft...          │
+├─────────────────────────────────────────────────┤
+│ REMEDIATION                                     │
+│ Encode all user input before rendering...       │
+└─────────────────────────────────────────────────┘
+```
+
+Filter by severity using the pill buttons at the top: **All · CRITICAL · HIGH · MEDIUM · LOW · INFO**.
+
+---
+
+#### Page 3 — Settings (`#/settings`)
+
+Minimal settings page:
+
+- **Appearance** — Dark / Light theme toggle (persisted in `localStorage`)
+- **Report capabilities** — Live status of each format (JSON, HTML, Markdown, PDF, Bundle). If PDF is unavailable, the reason is displayed.
+- **About** — Short description of SpiderForge.
+
+---
+
+### 🧭 Design Principles
+
+The UI is built to be **honest about what the backend actually does**:
+
+- No fake metrics — no "Total Scans" counters that don't exist in the database
+- No fake progress bars — the scan runs server-side; you get the result when it finishes
+- No invented pages — three pages only: Dashboard, Scan Detail, Settings
+- Every field maps to a real backend field (`ScanRequest` Pydantic model)
+- Every button maps to a real endpoint
+- Errors are shown verbatim from `error.message` + `error.code` returned by the backend
+
+### Keyboard shortcuts
+
+| Key | Action |
+|---|---|
+| `Enter` (in URL field) | Submit scan |
+| `Enter` / `Space` (on a scan row) | Open scan detail |
+| `Esc` | Close modal |
+
+### REST API for automation
+
+All actions in the UI are backed by the REST API. You can call them directly:
+
+```bash
+# Health
+curl http://127.0.0.1:8000/api/health
+
+# Capabilities
+curl http://127.0.0.1:8000/api/capabilities
+
+# List scans
+curl http://127.0.0.1:8000/api/scans?limit=20
+
+# Get scan details
+curl http://127.0.0.1:8000/api/scans/42
+
+# Get findings
+curl http://127.0.0.1:8000/api/scans/42/findings
+
+# Run a scan
+curl -X POST http://127.0.0.1:8000/api/scan \
+  -H "Content-Type: application/json" \
+  -d '{
+    "target": "https://example.com",
+    "max_urls": 200,
+    "max_depth": 3,
+    "concurrency": 10,
+    "rate_limit": 20,
+    "scope_free": false,
+    "verify_tls": true,
+    "allow_private": false
+  }'
+
+# Download reports
+curl -O http://127.0.0.1:8000/api/scans/42/report?format=json
+curl -O http://127.0.0.1:8000/api/scans/42/report?format=pdf
+curl -O http://127.0.0.1:8000/api/scans/42/report/bundle
+```
+
+### Environment overrides
+
+| Variable | Purpose |
+|---|---|
+| `SPIDERFORGE_ROOT` | Force a specific backend root directory |
+| `SPIDERFORGE_FRONTEND_DIR` | Force a specific frontend directory |
+| `SPIDERFORGE_DEBUG` | Enable verbose logging + tracebacks |
 
 ---
 
@@ -289,70 +521,83 @@ randomize_accept_language = true
 
 ---
 
-## 🌐 Web Dashboard
+## 🔌 API Reference
 
-Fully standalone — no project directory required.
+The web dashboard is backed by a FastAPI service. All endpoints below are consumed directly by the UI.
 
-### Launch
+| Method | Endpoint | Purpose |
+|---|---|---|
+| `GET` | `/api/health` | Backend status + version |
+| `GET` | `/api/capabilities` | Available report formats (PDF, bundle) |
+| `POST` | `/api/scan` | Run a scan synchronously, returns findings with evidence |
+| `GET` | `/api/scans?limit=N` | List recent scans |
+| `GET` | `/api/scans/{id}` | Scan metadata (target, status, scope, error) |
+| `GET` | `/api/scans/{id}/findings` | Findings from the database |
+| `GET` | `/api/scans/{id}/report?format=X` | Render a report (html, json, md, pdf) |
+| `GET` | `/api/scans/{id}/report/bundle` | Download ZIP with all formats + manifest |
 
-```bash
-# Foreground (Ctrl+C to stop)
-spiderforge web --foreground
+### Request / Response examples
 
-# Background (detached — server survives shell exit)
-spiderforge web
+**`POST /api/scan`**
 
-# Custom bind address / port
-spiderforge web --host 0.0.0.0 --port 9000
+Request:
 
-# Do not open the browser
-spiderforge web --no-browser
-
-# Reset saved web config and re-run the first-run wizard
-spiderforge web --reset-config
+```json
+{
+  "target": "https://example.com",
+  "max_urls": 200,
+  "max_depth": 3,
+  "concurrency": 10,
+  "rate_limit": 20.0,
+  "scope_free": false,
+  "verify_tls": true,
+  "allow_private": false
+}
 ```
 
-### First-run wizard
+Response (success):
 
-On first launch, SpiderForge asks for:
-
-- Port (default 8000)
-- Auto-open browser (yes / no)
-
-Preferences are saved to `~/.spiderforge/web.toml`:
-
-```toml
-[web]
-host = "127.0.0.1"
-port = 8000
-auto_open_browser = true
-theme = "dark"
-accent = "blue"
-first_run_done = true
+```json
+{
+  "status": "success",
+  "target": "https://example.com",
+  "total_issues": 5,
+  "findings": [ /* ... */ ],
+  "summary": { /* ... */ },
+  "technologies": [ /* ... */ ],
+  "discovered_urls": 42,
+  "duration_seconds": 18.4,
+  "scan_uid": "sf-2026-09-23-abc123"
+}
 ```
 
-Skip the wizard in scripts:
+Response (failure):
 
-```bash
-spiderforge web --port 9000 --no-browser
+```json
+{
+  "error": {
+    "code": "DNS_FAILURE",
+    "message": "Could not resolve the target hostname.",
+    "detail": "socket.gaierror: [Errno -2] Name or service not known",
+    "target": "https://does-not-exist.invalid"
+  }
+}
 ```
 
-### Features
+**Error codes** you may see:
 
-- Live target scanning with real-time finding feed
-- Severity-badged finding cards (CRITICAL / HIGH / MEDIUM / LOW / INFO)
-- Sortable scan history
-- Downloadable reports: HTML / JSON / Markdown / PDF / ZIP bundle
-- REST API (`/api/*`) for automation
-- Dark theme, responsive layout
-
-### Environment overrides
-
-| Variable | Purpose |
+| Code | Meaning |
 |---|---|
-| `SPIDERFORGE_ROOT` | Force a specific backend root directory |
-| `SPIDERFORGE_FRONTEND_DIR` | Force a specific frontend directory |
-| `SPIDERFORGE_DEBUG` | Enable verbose logging + tracebacks |
+| `TARGET_REQUIRED` | No target URL provided |
+| `ENGINE_INIT_FAILED` | Engine could not start |
+| `SCOPE_VIOLATION` | Target is outside the authorized scope |
+| `TARGET_BLOCKED` | Blocked by SSRF / network safety policy |
+| `DNS_FAILURE` | Hostname could not be resolved |
+| `CONNECTION_FAILED` | Target refused the connection |
+| `TIMEOUT` | Target did not respond in time |
+| `PROXY_UNREACHABLE` | Anonymity proxy is down |
+| `PDF_RENDERER_UNAVAILABLE` | PDF format requested but WeasyPrint is missing |
+| `UNSUPPORTED_FORMAT` | Report format not recognized |
 
 ---
 
@@ -485,6 +730,10 @@ spider-forge/
 │   └── static/frontend/          # packaged web UI
 │
 ├── frontend/                     # Source frontend (mirror)
+│   ├── index.html                # 3-page SPA
+│   ├── styles.css                # design system
+│   └── app.js                    # vanilla JS, no framework
+│
 ├── scripts/
 │   ├── install.sh                # POSIX bash installer ✨
 │   └── install.ps1               # Windows legacy
@@ -598,7 +847,7 @@ If PDF is a hard requirement, install these manually with your OS package manage
 - **macOS:** `brew install pango cairo gdk-pixbuf`
 - **Fedora:** `pango pango-devel cairo gdk-pixbuf2`
 
-Other report formats keep working — the API reports PDF as unavailable with a reason.
+Other report formats keep working — the API reports PDF as unavailable with a reason. The web UI will show the PDF button disabled with a tooltip explaining why.
 
 ### SOCKS proxy fails with `Missing dependencies for SOCKS support`
 
@@ -648,6 +897,7 @@ bash install.sh
 - **`scripts/install.ps1`** — kept as a Windows legacy fallback; `scripts/install.sh` is the canonical installer
 - **Playwright** requires a ~300 MB Chromium download on first install (once per user, cached in `~/.cache/ms-playwright`)
 - **PyPI release** — not yet available, install from source via the script (tracked under Phase F)
+- **Frontend is intentionally minimal** — three pages only. Additional views (findings aggregation, report library) are not planned; the scan detail page already covers both.
 
 ---
 
@@ -660,6 +910,7 @@ bash install.sh
 - [x] Async engine with shared `SafeHttpClient`
 - [x] Reports: JSON / Markdown / HTML / PDF
 - [x] FastAPI web dashboard (standalone, first-run wizard)
+- [x] Minimal 3-page web UI (Dashboard, Scan Detail, Settings)
 - [x] Anonymity layer (15 subcommands, proxy rotation, DoH, fingerprint)
 - [x] System Doctor (health checks with exit codes)
 - [x] pipx-based POSIX `install.sh` (fully automated, no system packages)
